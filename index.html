@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政治新聞網</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #0055a5;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .main-container {
+            padding: 20px;
+        }
+        .news-highlight {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .news-item {
+            flex: 1 1 45%;
+            border: 1px solid #ccc;
+            margin: 10px;
+            padding: 10px;
+            box-shadow: 2px 2px 5px #aaa;
+        }
+        .news-item img {
+            width: 100%;
+            height: auto;
+        }
+        .poll, .comment-section {
+            margin: 20px 0;
+        }
+        footer {
+            text-align: center;
+            background-color: #003366;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>政治新聞網</h1>
+        <p>最新的政治動態與深度分析</p>
+    </header>
+
+    <nav>
+        <a href="#domestic">國內政治</a>
+        <a href="#international">國際政治</a>
+        <a href="#analysis">政策解析</a>
+        <a href="#figures">政治人物</a>
+        <a href="#hot-topics">熱門議題</a>
+    </nav>
+
+    <div class="main-container">
+
+        <section id="highlights">
+            <h2>最新政治新聞</h2>
+            <div class="news-highlight">
+                <div class="news-item">
+                    <img src="https://via.placeholder.com/300" alt="新聞圖片">
+                    <h3>國內大選倒計時</h3>
+                    <p>大選進入最後一週，候選人全力衝刺。</p>
+                </div>
+                <div class="news-item">
+                    <img src="https://via.placeholder.com/300" alt="新聞圖片">
+                    <h3>國際關係新進展</h3>
+                    <p>最新貿易協議簽署，各國反應不一。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="analysis">
+            <h2>專題分析</h2>
+            <p>深度解析近期政策與政治趨勢，幫助您了解大局。</p>
+        </section>
+
+        <section class="poll">
+            <h2>熱門議題民調</h2>
+            <p>您認為哪位候選人最有可能當選？</p>
+            <form>
+                <input type="radio" name="candidate" value="candidate1"> 候選人 A<br>
+                <input type="radio" name="candidate" value="candidate2"> 候選人 B<br>
+                <input type="radio" name="candidate" value="candidate3"> 候選人 C<br><br>
+                <button type="submit">提交投票</button>
+            </form>
+        </section>
+
+        <section class="comment-section">
+            <h2>讀者評論</h2>
+            <textarea rows="5" cols="50" placeholder="發表您的看法..."></textarea><br>
+            <button type="submit">提交評論</button>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2024 政治新聞網 | 保留所有權利</p>
+    </footer>
+
+</body>
+</html>
