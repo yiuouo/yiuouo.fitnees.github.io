@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>減肥產品創新專案</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #0073e6;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+        }
+        nav {
+            background-color: #005bb5;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            margin: 20px auto;
+            max-width: 800px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #0073e6;
+        }
+        button {
+            background-color: #0073e6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #005bb5;
+        }
+        footer {
+            text-align: center;
+            background-color: #f1f1f1;
+            padding: 10px 0;
+            margin-top: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>減肥產品創新專案</h1>
+    </header>
+    <nav>
+        <a href="#introduction">專案介紹</a>
+        <a href="#features">產品特色</a>
+        <a href="#reminder">每日提醒</a>
+        <a href="#contact">聯絡我們</a>
+    </nav>
+    <main>
+        <section id="introduction">
+            <h2>專案介紹</h2>
+            <p>歡迎來到我們的減肥產品創新專案！我們的目標是通過個性化且有效的解決方案幫助您達成健康目標。探索我們的工具與功能，立即開始您的健康旅程。</p>
+        </section>
+        <section id="features">
+            <h2>產品特色</h2>
+            <ul>
+                <li>個性化飲食計畫</li>
+                <li>每日提醒，保持紀律</li>
+                <li>卡路里追蹤與進度監控</li>
+                <li>專家健康生活建議</li>
+            </ul>
+        </section>
+        <section id="reminder">
+            <h2>每日提醒</h2>
+            <p>保持您的減肥計劃，點擊下方按鈕查看每日提醒並安排下一次提醒。</p>
+            <button id="reminderButton">顯示提醒</button>
+            <div id="reminderMessage" style="display: none; margin-top: 15px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px;">
+                <p>提醒：別忘了今天使用您的減肥產品！</p>
+            </div>
+        </section>
+        <section id="contact">
+            <h2>聯絡我們</h2>
+            <p>如果您有任何問題或需要支持，歡迎聯繫我們：</p>
+            <p>電子郵件：support@weightlossproject.com</p>
+            <p>電話：+1-800-555-1234</p>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 減肥產品創新專案。保留所有權利。</p>
+    </footer>
+    <script>
+        document.getElementById('reminderButton').addEventListener('click', function() {
+            const reminderDiv = document.getElementById('reminderMessage');
+            reminderDiv.style.display = 'block';
+
+            const now = new Date();
+            const nextReminder = new Date();
+            nextReminder.setDate(now.getDate() + 1);
+            alert(`您的下一次提醒已安排於：${nextReminder.toLocaleDateString()} ${nextReminder.toLocaleTimeString()}`);
+        });
+    </script>
+</body>
+</html>
