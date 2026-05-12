@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrivaBoost - 自動化旅遊行銷漏斗</title>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
+    <style>
+        /* =========================================================
+           共用色彩與基礎設定
+           ========================================================= */
+        :root {
+            --brand-blue: #007faf;
+            --brand-red: #c0131d;
+            --brand-green: #008751;
+            --brand-orange: #f48f00;
+            --bg-light: #f4f7f9;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: var(--bg-light); color: #333; overflow-x: hidden; }
+
+        /* =========================================================
+           廣告引流文案預覽區
+           ========================================================= */
+        .ad-toggle-btn { position: fixed; bottom: 30px; left: 30px; background: #1877F2; color: white; border: none; border-radius: 50px; padding: 15px 25px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(24, 119, 242, 0.4); z-index: 10000; transition: transform 0.2s; }
+        .ad-toggle-btn:hover { transform: scale(1.05); }
+        .ad-mockup-panel { position: fixed; bottom: 90px; left: 30px; width: 350px; background: white; border-radius: 12px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); z-index: 10000; display: none; flex-direction: column; overflow: hidden; border: 1px solid #ddd; }
+        .ad-mockup-panel.show { display: flex; }
+        .ad-header { background: #f0f2f5; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd;}
+        .ad-header span { color: #1877F2; font-size: 0.9rem; }
+        .ad-body { padding: 15px; font-size: 0.95rem; line-height: 1.5; }
+        .ad-image { width: 100%; height: 180px; background: url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=800&auto=format&fit=crop') center/cover; }
+        .ad-footer { background: #f0f2f5; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .ad-footer-text { flex: 1; }
+        .ad-footer-text strong { display: block; font-size: 1rem; margin-bottom: 3px; }
+        .ad-footer-text span { font-size: 0.8rem; color: #65676B; }
+        .ad-cta { background: #e4e6eb; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* =========================================================
+           自動回覆客服機器人
+           ========================================================= */
+        .chat-btn { position: fixed; bottom: 30px; right: 30px; background: var(--brand-blue); color: white; border: none; border-radius: 50px; padding: 15px 25px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 10000; transition: transform 0.2s;}
+        .chat-btn:hover { transform: scale(1.05); }
+        .chat-window { position: fixed; bottom: 90px; right: 30px; width: 320px; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; flex-direction: column; z-index: 10000; overflow: hidden; border: 1px solid #ddd;}
+        .chat-window.show { display: flex; }
+        .chat-header { background: var(--brand-blue); color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .close-chat { cursor: pointer; font-size: 1.2rem; }
+        .chat-body { padding: 15px; height: 300px; overflow-y: auto; background: #f9f9f9; display: flex; flex-direction: column; gap: 12px; }
+        .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word;}
+        .bot-message { background: #e5e5ea; color: black; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .user-message { background: var(--brand-blue); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-footer { padding: 10px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        .chat-footer input { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 0.95rem;}
+        .chat-footer button { background: var(--brand-orange); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+
+        /* =========================================================
+           全螢幕阻擋：獨立名單蒐集頁 (Squeeze Page)
+           ========================================================= */
+        #squeezePage {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; overflow-y: auto;
+        }
+        .squeeze-container { background: white; max-width: 1000px; width: 100%; border-radius: 20px; display: flex; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        .squeeze-left { flex: 1; background: url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=800&auto=format&fit=crop') center/cover; padding: 40px; color: white; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
+        .squeeze-left::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2)); z-index: 1; }
+        .squeeze-left-content { position: relative; z-index: 2; }
+        .squeeze-left h2 { font-size: 2.2rem; margin: 0 0 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .squeeze-left p { font-size: 1.1rem; color: #ddd; }
+        .squeeze-right { flex: 1.2; padding: 40px; background: #fff; display: flex; flex-direction: column; justify-content: center; overflow-y: auto;}
+        .squeeze-right h1 { font-size: 1.8rem; color: var(--brand-red); margin: 0 0 15px; font-weight: 900; line-height: 1.2; }
+        .squeeze-right p.subtitle { font-size: 1rem; color: #555; margin-bottom: 20px; line-height: 1.5; }
+        .squeeze-form input { width: 100%; padding: 14px; border: 2px solid #eee; border-radius: 8px; font-size: 1rem; margin-bottom: 12px; box-sizing: border-box; background: #f9f9f9;}
+        .squeeze-form input:focus { border-color: var(--brand-orange); outline: none; background: white;}
+        .squeeze-form button { width: 100%; background: var(--brand-orange); color: white; border: none; padding: 16px; font-size: 1.2rem; font-weight: 900; border-radius: 8px; cursor: pointer; transition: transform 0.2s; box-shadow: 0 8px 20px rgba(244, 143, 0, 0.4); margin-bottom: 15px;}
+        .squeeze-form button:hover { transform: translateY(-2px); background: #e08300; }
+        .skip-link { display: block; text-align: center; color: #aaa; font-size: 0.85rem; cursor: pointer; text-decoration: underline; margin-bottom: 20px;}
+        .review-box { background: #f4f7f9; padding: 20px; border-radius: 12px; border-left: 5px solid var(--brand-orange); position: relative; }
+        .review-stars { color: var(--brand-orange); letter-spacing: 2px; font-size: 1.2rem; margin-bottom: 5px; }
+        .review-text { font-size: 0.95rem; color: #444; font-style: italic; margin: 0 0 15px; line-height: 1.5; }
+        .review-author { display: flex; align-items: center; gap: 10px; }
+        .review-author img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+        .review-author span { font-size: 0.85rem; font-weight: bold; color: #333; }
+        .review-author small { color: #888; font-weight: normal; }
+
+        /* 動態訂房通知 (Live Toast) */
+        .live-toast { position: fixed; bottom: 30px; left: 30px; background: white; padding: 15px 20px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 15px; z-index: 10001; transform: translateY(150px); opacity: 0; transition: all 0.5s; font-size: 0.9rem; border: 1px solid #eee; }
+        .live-toast.show { transform: translateY(0); opacity: 1; }
+        .live-toast img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover;}
+        .toast-content strong { color: var(--text-dark); }
+        .toast-content .toast-action { color: var(--brand-blue); font-weight: bold; }
+        .toast-time { font-size: 0.75rem; color: #888; margin-top: 2px; display: block;}
+
+        /* =========================================================
+           主網站與內嵌名單蒐集橫幅 (Inline Squeeze Banner)
+           ========================================================= */
+        #mainWebsite { display: none; }
+        nav { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--brand-blue); }
+        .logo span { color: var(--brand-orange); }
+
+        /* ✨ 新增：主網站內的置頂名單蒐集橫幅 */
+        .inline-squeeze-banner {
+            background: linear-gradient(90deg, #fff8f0 0%, #ffffff 100%);
+            border-bottom: 2px solid var(--brand-orange);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .inline-banner-text h3 { margin: 0 0 5px; color: var(--brand-red); font-size: 1.1rem; }
+        .inline-banner-text p { margin: 0; font-size: 0.9rem; color: #555; }
+        .inline-banner-form { display: flex; gap: 10px; flex: 1; max-width: 500px; }
+        .inline-banner-form input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9rem; }
+        .inline-banner-form button { background: var(--brand-orange); color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; white-space: nowrap; }
+        .inline-banner-form button:hover { background: #d37a00; }
+
+        .search-bar-container { background: var(--brand-blue); padding: 20px 5%; display: flex; justify-content: center; }
+        .search-bar { background: white; padding: 10px; border-radius: 8px; display: flex; gap: 10px; width: 100%; max-width: 1000px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .search-input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 4px; }
+        .search-btn { background: var(--brand-orange); color: white; border: none; padding: 0 30px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+
+        /* 銷售頁面 (3 種類別) */
+        .main-layout { display: flex; gap: 20px; padding: 40px 5%; max-width: 1200px; margin: auto; }
+        .sidebar { width: 250px; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; height: fit-content; }
+        .sidebar h4 { margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .filter-item { margin-bottom: 10px; font-size: 0.9rem; color: #555; display: flex; align-items: center;}
+        
+        .content-area { flex: 1; }
+        .sales-header { border-bottom: 2px solid var(--brand-blue); padding-bottom: 10px; margin-top: 0; margin-bottom: 25px; color: var(--brand-blue); }
+
+        .hotel-card { background: white; display: flex; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; overflow: hidden; transition: box-shadow 0.2s; position: relative;}
+        .hotel-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .category-badge { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; z-index: 10;}
+        .hotel-img { width: 280px; position: relative;}
+        .hotel-img img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .hotel-info { flex: 1; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        .hotel-title { font-size: 1.4rem; font-weight: bold; margin: 0 0 5px; color: var(--brand-blue); }
+        .hotel-rating { color: var(--brand-orange); font-size: 0.9rem; margin-bottom: 10px; font-weight: bold;}
+        .hotel-desc { font-size: 0.95rem; color: #666; margin-bottom: 15px; line-height: 1.5; }
+        .hotel-features { list-style: none; padding: 0; margin: 0; display: flex; gap: 15px; font-size: 0.85rem; color: var(--brand-green); font-weight: bold;}
+        .hotel-features li::before { content: "✓ "; }
+        
+        /* 銷售急迫性進度條 */
+        .scarcity-bar { width: 100%; background: #eee; height: 6px; border-radius: 3px; margin-top: 10px; overflow: hidden;}
+        .scarcity-fill { height: 100%; background: var(--brand-red); width: 85%; }
+        .scarcity-text { font-size: 0.8rem; color: var(--brand-red); margin-top: 5px; font-weight: bold;}
+
+        .hotel-price-box { width: 220px; background: #fafafa; border-left: 1px solid #ddd; padding: 20px; text-align: right; display: flex; flex-direction: column; justify-content: center; }
+        .price { font-size: 2rem; font-weight: bold; color: var(--brand-green); margin-bottom: 5px; }
+        .view-deal-btn { background: var(--brand-blue); color: white; border: none; padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; transition: background 0.2s;}
+        .view-deal-btn:hover { background: #00668c; }
+
+        /* 結帳 Modal */
+        .modal-overlay { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: white; padding: 35px; border-radius: 12px; width: 90%; max-width: 400px; position: relative; }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #888; }
+        .checkout-form input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px;}
+        .submit-btn { background: var(--brand-orange); color: white; border: none; padding: 15px; width: 100%; font-weight: bold; font-size: 1.1rem; border-radius: 6px; cursor: pointer; }
+
+        @media (max-width: 900px) {
+            .squeeze-container { flex-direction: column; }
+            .squeeze-left { display: none; }
+            .inline-squeeze-banner { flex-direction: column; text-align: center; }
+            .inline-banner-form { width: 100%; flex-direction: column; }
+            .live-toast { bottom: 20px; left: 5%; width: 90%; box-sizing: border-box; padding: 10px; }
+            .main-layout { flex-direction: column; }
+            .hotel-card { flex-direction: column; }
+            .hotel-img { width: 100%; height: 200px; }
+            .hotel-price-box { width: auto; border-left: none; text-align: left; border-top: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="live-toast" id="liveToast">
+        <img id="toastImg" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop" alt="User">
+        <div class="toast-content">
+            <strong id="toastName">台北的 林小姐</strong> 剛剛領取了指南並預訂了<br>
+            <span class="toast-action" id="toastAction">【府城尋根老宅之旅】</span>
+            <span class="toast-time">幾秒鐘前</span>
+        </div>
+    </div>
+
+    <div id="squeezePage">
+        <div class="squeeze-container">
+            <div class="squeeze-left">
+                <div class="squeeze-left-content">
+                    <h2>限時免費贈品</h2>
+                    <p>《2026 訂房網演算法破解指南》<br>教你如何繞過系統漏洞，拿回屬於你的折扣。</p>
+                </div>
+            </div>
+            <div class="squeeze-right">
+                <h1>每次訂房都買貴？<br>你早就被演算法看透了。</h1>
+                <p class="subtitle">輸入 Email 立即領取旅遊業界不外傳的破解指南，加碼再送 $500 網站專屬訂房折扣碼！</p>
+                
+                <div class="squeeze-form">
+                    <input type="text" id="sqName" placeholder="輸入您的真實姓名" required>
+                    <input type="email" id="sqEmail" placeholder="輸入您的電子信箱" required>
+                    <button onclick="submitLead('squeeze')">免費發送至我的信箱</button>
+                    <span class="skip-link" onclick="closeSqueezePage()">不用了，我喜歡買貴的飯店 (跳過進入網站)</span>
+                </div>
+
+                <div class="review-box">
+                    <div class="review-stars">★★★★★</div>
+                    <p class="review-text">「照著指南操作並輸入折扣碼，直接用半價訂到台南的百年老宅，CP 值超高，這網站太佛心了！」</p>
+                    <div class="review-author">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&auto=format&fit=crop" alt="User">
+                        <span>台中 張先生 <br><small>2 小時前 成功預訂</small></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="ad-toggle-btn" id="adBtn" onclick="toggleAdMockup()">📱 廣告引流預覽</button>
+    <div id="adMockup" class="ad-mockup-panel">
+        <div class="ad-header">TrivaBoost 贊助 <span>•••</span></div>
+        <div class="ad-body">別再開 10 個分頁找飯店了！訂房網的演算法早就看透了你。👁️<br><br>我們整理了旅遊業界不外傳的《訂房網破解指南》，教你如何利用系統漏洞，用 5 折入住頂級飯店。<br><br>🎁 <b>【限時免費領取】</b> 點擊下載，加碼再送 $500 專屬訂房折扣碼！</div>
+        <div class="ad-image"></div>
+        <div class="ad-footer">
+            <div class="ad-footer-text"><span>TrivaBoost.com</span><strong>【限時免費】2026 頂級飯店半價破解指南</strong></div>
+            <button class="ad-cta" onclick="toggleAdMockup()">瞭解詳情</button>
+        </div>
+    </div>
+
+    <button class="chat-btn" onclick="toggleChat()">💬 線上客服</button>
+    <div id="chatWindow" class="chat-window">
+        <div class="chat-header">TrivaBoost 自動客服<span class="close-chat" onclick="toggleChat()">&times;</span></div>
+        <div id="chatBody" class="chat-body"><div class="message bot-message">您好！我是 TrivaBoost 客服 🤖<br>請問想了解「免費贈品」還是「台南/萬里行程」呢？</div></div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="輸入問題..." onkeypress="handleChatEnter(event)">
+            <button onclick="sendChatMessage()">發送</button>
+        </div>
+    </div>
+
+    <div id="mainWebsite">
+        <nav>
+            <div class="logo">Triva<span>Boost</span></div>
+            <div style="font-weight: bold; color: var(--brand-blue); cursor: pointer;">會員登入</div>
+        </nav>
+
+        <div class="inline-squeeze-banner" id="inlineSqueezeBanner">
+            <div class="inline-banner-text">
+                <h3>🎁 尚未領取《訂房網破解指南》？</h3>
+                <p>現在填寫 Email，自動派送指南至信箱，加碼送 $500 專屬訂房金！</p>
+            </div>
+            <div class="inline-banner-form">
+                <input type="text" id="inlineName" placeholder="您的姓名">
+                <input type="email" id="inlineEmail" placeholder="您的電子信箱">
+                <button onclick="submitLead('inline')">立即發送給我</button>
+            </div>
+        </div>
+
+        <div class="search-bar-container">
+            <div class="search-bar">
+                <input type="text" class="search-input" value="台灣" placeholder="輸入目的地">
+                <input type="date" class="search-input">
+                <input type="date" class="search-input">
+                <button class="search-btn">重新搜尋</button>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <div class="sidebar">
+                <h4>篩選條件</h4>
+                <div class="filter-item"><input type="checkbox" checked> 地方創生認證</div>
+                <div class="filter-item"><input type="checkbox" checked> 包含體驗行程</div>
+                <div class="filter-item"><input type="checkbox"> 5 星級奢華</div>
+            </div>
+
+            <div class="content-area">
+                <h2 class="sales-header">專屬銷售方案 (3 大精選類別)</h2>
+                
+                <div class="hotel-card">
+                    <div class="hotel-img">
+                        <span class="category-badge" style="background: var(--brand-orange);">類別 1：地方創生</span>
+                        <img src="https://images.unsplash.com/photo-1596436889106-be35e843f974?q=80&w=600&auto=format&fit=crop" alt="萬里">
+                    </div>
+                    <div class="hotel-info">
+                        <div>
+                            <h3 class="hotel-title">萬里硬派再生：永續深度渡假村</h3>
+                            <div class="hotel-rating">★★★★☆ 獲獎肯定專案</div>
+                            <p class="hotel-desc">榮獲大獎肯定的永續發展計畫。完美結合地方創生理念的住宿體驗，帶您深入萬里在地文化。</p>
+                        </div>
+                        <ul class="hotel-features"><li>含在地文創體驗</li><li>附贈海景早餐</li></ul>
+                        <div class="scarcity-bar"><div class="scarcity-fill"></div></div>
+                        <div class="scarcity-text">🔥 限量專案：即將售罄</div>
+                    </div>
+                    <div class="hotel-price-box">
+                        <div style="color: var(--brand-red); font-size: 0.85rem; font-weight: bold; margin-bottom: 5px;">限時促銷</div>
+                        <div class="price">NT$3,499 <span>/晚</span></div>
+                        <button class="view-deal-btn" onclick="openCheckout('【地方創生】萬里硬派再生渡假村', 'NT$3,499')">預訂此方案</button>
+                    </div>
+                </div>
+
+                <div class="hotel-card">
+                    <div class="hotel-img">
+                        <span class="category-badge" style="background: var(--brand-blue);">類別 2：文化輕旅</span>
+                        <img src="https://images.unsplash.com/photo-1578507025211-19d261e4f4fb?q=80&w=600&auto=format&fit=crop" alt="台南">
+                    </div>
+                    <div class="hotel-info">
+                        <div>
+                            <h3 class="hotel-title">府城尋根：歷史老宅文化之旅</h3>
+                            <div class="hotel-rating">★★★★★ 9.8/10 完美體驗</div>
+                            <p class="hotel-desc">穿梭古都巷弄，入住傳統建築改建的質感民宿。行程包含在地文化導覽與文創市集解析。</p>
+                        </div>
+                        <ul class="hotel-features"><li>專人古城導覽</li><li>文創市集抵用券</li></ul>
+                        <div class="scarcity-bar"><div class="scarcity-fill" style="width: 92%;"></div></div>
+                        <div class="scarcity-text">🔥 熱門時段：剩餘 1 間</div>
+                    </div>
+                    <div class="hotel-price-box">
+                        <div style="color: var(--brand-red); font-size: 0.85rem; font-weight: bold; margin-bottom: 5px;">熱門首選</div>
+                        <div class="price">NT$4,200 <span>/晚</span></div>
+                        <button class="view-deal-btn" onclick="openCheckout('【文化輕旅】府城尋根老宅之旅', 'NT$4,200')">預訂此方案</button>
+                    </div>
+                </div>
+
+                <div class="hotel-card">
+                    <div class="hotel-img">
+                        <span class="category-badge" style="background: #111;">類別 3：奢華度假</span>
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop" alt="奢華">
+                    </div>
+                    <div class="hotel-info">
+                        <div>
+                            <h3 class="hotel-title">全球奢華五星：尊榮度假集團</h3>
+                            <div class="hotel-rating">★★★★★ 9.9/10 頂級享受</div>
+                            <p class="hotel-desc">給追求極致享受的您。從曼谷到馬爾地夫，無縫接軌頂級服務，解鎖 VIP 專屬禮遇與機場快速通關。</p>
+                        </div>
+                        <ul class="hotel-features"><li>房型保證升等</li><li>全天候行政酒廊</li></ul>
+                    </div>
+                    <div class="hotel-price-box">
+                        <div class="price">NT$18,500 <span>/晚</span></div>
+                        <button class="view-deal-btn" style="background: var(--brand-green);" onclick="openCheckout('【奢華度假】全球五星尊榮專案', 'NT$18,500')">預訂頂級套房</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeCheckout()">&times;</span>
+            <h2 id="modalTitle" style="color: var(--brand-blue); margin-top: 0;">安全訂房系統</h2>
+            <p id="itemDetails" style="color: var(--brand-red); font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px;"></p>
+            
+            <form onsubmit="handleCheckoutSubmit(event)">
+                <input type="text" id="formName" class="checkout-form" placeholder="訂房人姓名" required style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <input type="email" id="formEmail" class="checkout-form" placeholder="電子信箱 (將寄送訂房憑證)" required style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <input type="text" placeholder="信用卡號碼 (測試用)" pattern="\d{16}" required style="width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                <button type="submit" id="submitBtn" class="submit-btn">確認付款並送出</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // EmailJS 設定
+        const SERVICE_ID = "service_qh33vpx";
+        const TEMPLATE_ID = "YOUR_TEMPLATE_ID"; 
+        const PUBLIC_KEY = "YOUR_PUBLIC_KEY";   
+        emailjs.init(PUBLIC_KEY);
+
+        // 動態訂房通知 (Live Toast)
+        const fakeData = [
+            { name: "高雄的 陳小姐", action: "【府城尋根老宅之旅】", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&auto=format&fit=crop" },
+            { name: "新竹的 王先生", action: "《訂房網破解指南》", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop" },
+            { name: "台北的 林先生", action: "【萬里硬派再生渡假村】", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop" }
+        ];
+        let toastIndex = 0;
+        function showLiveToast() {
+            const toast = document.getElementById('liveToast');
+            const data = fakeData[toastIndex % fakeData.length];
+            document.getElementById('toastName').innerText = data.name;
+            document.getElementById('toastAction').innerText = data.action;
+            document.getElementById('toastImg').src = data.img;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 4000);
+            toastIndex++;
+        }
+        setTimeout(() => { showLiveToast(); setInterval(showLiveToast, 8000); }, 2000);
+
+        function toggleAdMockup() { document.getElementById('adMockup').classList.toggle('show'); }
+
+        // 名單蒐集邏輯 (支援全螢幕與內嵌橫幅)
+        function submitLead(source) {
+            let name, email;
+            if(source === 'squeeze') {
+                name = document.getElementById('sqName').value;
+                email = document.getElementById('sqEmail').value;
+            } else {
+                name = document.getElementById('inlineName').value;
+                email = document.getElementById('inlineEmail').value;
+            }
+
+            if(!name || !email) { alert("請填寫姓名與信箱！"); return; }
+            
+            sendEmailViaJS(name, email, "《2026 訂房網演算法破解指南》", "🎁 處理成功！\n我們已將免費指南發送至您的信箱。");
+            
+            if(source === 'squeeze') closeSqueezePage();
+            
+            // 填完後隱藏內嵌橫幅
+            document.getElementById('inlineSqueezeBanner').style.display = 'none';
+            document.getElementById('formName').value = name;
+            document.getElementById('formEmail').value = email;
+        }
+
+        function closeSqueezePage() {
+            document.getElementById('squeezePage').style.display = 'none';
+            document.getElementById('mainWebsite').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // 結帳邏輯
+        function openCheckout(product, price) {
+            document.getElementById('itemDetails').innerText = `${product} | ${price}`;
+            document.getElementById('modal').classList.add('show');
+        }
+        function closeCheckout() { document.getElementById('modal').classList.remove('show'); }
+
+        function handleCheckoutSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('formName').value;
+            const email = document.getElementById('formEmail').value;
+            const product = document.getElementById('itemDetails').innerText;
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "付款中..."; btn.disabled = true;
+            sendEmailViaJS(name, email, product, "✅ 訂房成功！\n系統已【自動回覆】訂房憑證至您的信箱。", btn, "確認付款並送出");
+        }
+
+        function sendEmailViaJS(buyerName, buyerEmail, productDetails, successMsg, btnElement = null, resetBtnText = "") {
+            if (PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
+                alert(`(防呆模擬測試)\n${successMsg}\n\n*已模擬寄至：${buyerEmail}*`);
+                if(btnElement) { btnElement.innerText = resetBtnText; btnElement.disabled = false; }
+                closeCheckout();
+                return;
+            }
+            emailjs.send(SERVICE_ID, TEMPLATE_ID, { to_name: buyerName, to_email: buyerEmail, product_details: productDetails })
+            .then(() => { alert(successMsg); closeCheckout(); })
+            .catch((err) => { alert("❌ 發送失敗: " + JSON.stringify(err)); })
+            .finally(() => { if(btnElement) { btnElement.innerText = resetBtnText; btnElement.disabled = false; }});
+        }
+
+        // 客服機器人邏輯
+        function toggleChat() { document.getElementById('chatWindow').classList.toggle('show'); }
+        function handleChatEnter(event) { if (event.key === 'Enter') sendChatMessage(); }
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user-message');
+            input.value = '';
+            document.getElementById('chatBody').scrollTop = document.getElementById('chatBody').scrollHeight;
+
+            setTimeout(() => {
+                let reply = "謝謝詢問！您可以直接在上方輸入 Email 索取免費指南喔！";
+                if (text.includes('免費') || text.includes('指南')) reply = "想要免費的《破解指南》嗎？🎁 只要在導覽列下方的橫幅輸入 Email，我們就會自動寄給您囉！";
+                else if (text.includes('台南') || text.includes('老宅')) reply = "「台南老宅之旅」是我們評價最高的行程！目前只剩 1 間，您可以點擊列表的「預訂此方案」進行訂房喔！🏮";
+                else if (text.includes('萬里')) reply = "萬里硬派再生渡假村擁有絕佳海景與手作體驗，即將售罄，趕快搶購吧！🌊";
+                
+                addMessage(reply, 'bot-message');
+                document.getElementById('chatBody').scrollTop = document.getElementById('chatBody').scrollHeight;
+            }, 1000);
+        }
+        function addMessage(text, className) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${className}`;
+            msgDiv.innerHTML = text;
+            document.getElementById('chatBody').appendChild(msgDiv);
+        }
+    </script>
+</body>
+</html>
